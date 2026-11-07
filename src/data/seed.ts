@@ -1,7 +1,38 @@
-import type {State,Report} from '../types';
-export const today=()=>new Date().toISOString().slice(0,10);
-export function seed():State {
-const names=['Bucayao','Tawiran','Pachoca','Canubing I','Biga','Ilaya'];
-const populations=[1240,860,680,1020,540,720];
-return {baseline:15,reports:names.map((barangay,i):Report=>({id:`R-${101+i}`,province:'Oriental Mindoro',municipality:'Calapan City',barangay,households:Math.round(populations[i]!/4),population:populations[i]!,local:[2200,1800,2400,3600,1200,2500][i]!,days:3+i,urgency:i===0||i===3,description:'Simulated supply interruption. Community storage is insufficient for daily emergency water needs.',date:today(),status:i<4?'Verified':'Pending',reason:'',lat:13.31+i*.022,lng:121.13+(i%3)*.025})),resources:[{id:'S-1',name:'Calapan emergency water depot',liters:30000,updated:today()},{id:'S-2',name:'Provincial mobile water reserve',liters:12000,updated:today()}],deliveries:[{id:'D-100',reportId:'R-102',liters:3000,actual:3000,status:'Completed',person:'Demo delivery team',vehicle:'Tanker 01',scheduled:today(),completed:today(),notes:'Simulated confirmed delivery',sources:[]},{id:'D-101',reportId:'R-101',liters:4000,actual:0,status:'Assigned',person:'Demo delivery team',vehicle:'Tanker 02',scheduled:today(),completed:'',notes:'',sources:[{resourceId:'S-1',liters:4000}]}],audit:[{date:new Date().toISOString(),actor:'Demo system',action:'Simulated scenario initialized'}]};
+import type { State } from '../types';
+import { calapanBarangays } from './barangays';
+
+const manilaDateFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Manila',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** A calendar date in the response workspace's timezone, regardless of the device timezone. */
+export function today(now: Date = new Date()): string {
+  const parts = manilaDateFormatter.formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((value) => value.type === type)!.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
+
+/** Reference data can be cached; operational records start empty and come from the database. */
+export function createEmptyState(): State {
+  return {
+    baseline: 6,
+    drinkingBaseline: 3,
+    cookingBaseline: 3,
+    reports: [],
+    resources: [],
+    deliveries: [],
+    teams: [],
+    audit: [],
+    barangays: calapanBarangays.map((barangay) => ({
+      ...barangay,
+      sourceUrls: barangay.sourceUrls ? [...barangay.sourceUrls] : undefined,
+      metadata: barangay.metadata ? { ...barangay.metadata } : undefined,
+    })),
+    revision: 0,
+  };
+}
+
+export const seed = createEmptyState;

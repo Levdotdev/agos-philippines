@@ -1,0 +1,116 @@
+{
+  "title": "Calapan City barangay reference data for AGOS Philippines",
+  "retrievedDate": "2026-11-06",
+  "censusReferenceDate": "2024-07-01",
+  "count": 62,
+  "totals": {
+    "population": 148558,
+    "householdPopulation": 148031,
+    "households": 37833
+  },
+  "sources": [
+    {
+      "id": "psa-psgc-calapan",
+      "publisher": "Philippine Statistics Authority",
+      "title": "PSGC: City of Calapan barangay directory",
+      "url": "https://psa.gov.ph/classification/psgc/barangays/1705205000",
+      "fields": [
+        "psgcCode",
+        "correspondenceCode",
+        "name",
+        "urbanRural",
+        "population"
+      ],
+      "license": "CC BY 4.0, per PSA website footer",
+      "licenseUrl": "https://psa.gov.ph/terms-of-use",
+      "notes": "Directory lists 62 barangays and 2024 POPCEN population. Displayed list header says 31 July 2025; retrieved 6 November 2026. Urban/rural labels are directory labels, not a new field survey. PSGC page truncates Sto. Niño to Sto. Ni; complete spelling comes from the household release."
+    },
+    {
+      "id": "psa-calapan-households-2024",
+      "publisher": "Philippine Statistics Authority, Oriental Mindoro Provincial Statistical Office",
+      "title": "Household Population, Number of Households, and Average Household Size: Calapan City, Oriental Mindoro, 2024",
+      "url": "https://rssomimaropa.psa.gov.ph/content/household-population-number-households-and-average-household-size-calapan-city-oriental",
+      "pdfUrl": "https://rssomimaropa.psa.gov.ph/system/files/attachment-dir/Household%20Population%2C%20Number%20of%20Households%2C%20and%20Average%20Household%20Size%20Calapan%20City%2C%20Oriental%20Mindoro%2C%202024.pdf",
+      "releaseDate": "2026-09-21",
+      "referenceNumber": "2026-SR-118",
+      "pages": [
+        3,
+        4
+      ],
+      "table": 3,
+      "fields": [
+        "population",
+        "householdPopulation",
+        "households"
+      ],
+      "license": "CC BY 4.0, per PSA regional website footer",
+      "notes": "Counts directly transcribed from Table 3, then totals checked. The PDF footer alternates 2025-SR-118 and 2026-SR-118; release date and reference number here follow the official landing page. Census date is July 1, 2024, not release date. Household population excludes institutional residents."
+    },
+    {
+      "id": "calapan-open-boundaries",
+      "publisher": "James Faeldon; underlying boundaries NAMRIA and PSA via OCHA COD-AB",
+      "title": "Philippines Administrative Boundaries JSON Maps, Calapan City, medium resolution",
+      "url": "https://github.com/faeldon/philippines-json-maps",
+      "downloadUrl": "https://raw.githubusercontent.com/faeldon/philippines-json-maps/master/latest/geojson/municities/medres/bgysubmuns-municity-1705205000.0.01.json",
+      "sourceDatasetUrl": "https://data.humdata.org/dataset/cod-ab-phl",
+      "version": "1.1.0",
+      "psgcSnapshot": "2026-3q",
+      "built": "2026-10-25",
+      "sourceCommit": "2b823013d15b6d9cb89944ef53a78dccc36c24f7",
+      "immutableDownloadUrl": "https://raw.githubusercontent.com/faeldon/philippines-json-maps/2b823013d15b6d9cb89944ef53a78dccc36c24f7/latest/geojson/municities/medres/bgysubmuns-municity-1705205000.0.01.json",
+      "underlyingGeometryRelease": "OCHA COD-AB, NAMRIA/PSA release 2023-11-06; current PSGC identifiers are 2026-3q, not a new physical survey",
+      "sourceRelease": "faeldon/philippines-psgc-shapefiles v1.0.0",
+      "crs": "EPSG:4326",
+      "simplification": "medium, 1% retained vertices",
+      "fields": [
+        "latitude",
+        "longitude",
+        "geometry"
+      ],
+      "license": "Map repository MIT; underlying boundaries CC BY 3.0 IGO",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/igo/",
+      "attribution": "Administrative boundaries: NAMRIA and PSA, via OCHA Philippines COD-AB; map conversion by James Faeldon (MIT).",
+      "notes": "All 62 feature IDs match official Calapan codes exactly. Map coordinates are calculated label points within simplified indicative boundaries. They are not verified household, pickup, water source, barangay hall or delivery locations. Boundaries are for contextual mapping, not legal delimitation or navigation."
+    }
+  ],
+  "planningDefault": {
+    "scope": "drinking_and_food_preparation_only",
+    "drinkingLitresPerPersonPerDay": 3,
+    "foodPreparationLitresPerPersonPerDay": 3,
+    "litresPerPersonPerDay": 6,
+    "excludedUses": [
+      "bathing",
+      "personal hygiene",
+      "laundry",
+      "sanitation"
+    ],
+    "classification": "Configurable AGOS service-planning assumption, not measured Calapan demand, a universal WHO requirement, a medical prescription, or a current shortage observation",
+    "formula": "reported affected people * (selected drinking litres/person/day + selected food-preparation litres/person/day) * requested days; subtract verified usable water already available where applicable",
+    "sourceUrl": "https://www.who.int/docs/default-source/wash-documents/wash-in-emergencies/technical-notes-on-wash-in-emergencies/who-tn-09-how-much-water-is-needed.pdf",
+    "sourceTitle": "WHO Technical Note 9: How much water is needed in emergencies, updated July 2013",
+    "sourceLocation": "Table 9.1, printed page 9.2, PDF page 2",
+    "secondarySourceUrl": "https://spherestandards.org/wp-content/uploads/Sphere-Handbook-2018-EN.pdf",
+    "secondarySourceLocation": "WASH Standard 2.1 table printed page 107 (PDF page 132); Appendix 3 printed page 145 (PDF page 170)",
+    "sourceRanges": {
+      "survivalWaterIntakeLitresPerPersonPerDay": [
+        2.5,
+        3
+      ],
+      "survivalIntakeScope": "Drinking plus water contained in food; depends on climate and individual physiology",
+      "basicCookingWaterLitresPerPersonPerDay": [
+        3,
+        6
+      ],
+      "cookingScope": "Water used for food preparation, separate from food moisture consumed; depends on food type and social/cultural norms"
+    },
+    "avoidDoubleCounting": "WHO survival intake already includes water in food. The selected 3-litre drinking component is an AGOS distribution allowance informed by that intake range, not a claim that all intake must be drunk. The separate 3-litre preparation component is water used to prepare food, not another allowance for food moisture. Do not add food moisture again.",
+    "notes": "The 6-litre total is an application choice: 3 litres allocated for drinking and the lower end (3 litres) of WHO basic-cooking range. WHO and Sphere do not define 6 litres as a universal standard. Planners should adjust for heat, activity, health needs and food preparation, with human review. The broader 15-litre domestic-water benchmark includes hygiene and is not the default for this app. Do not infer shortage, priority, affected people or delivery entitlement from census population alone."
+  },
+  "operationalRecords": {
+    "waterShortageReports": [],
+    "availableWaterResources": [],
+    "allocations": [],
+    "deliveries": [],
+    "notes": "No live operational data was verified from public sources. Start empty; authorized users must enter actual reports and resources."
+  }
+}

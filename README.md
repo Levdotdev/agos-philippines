@@ -1,64 +1,96 @@
-﻿# AGOS Philippines
+# AGOS Philippines
 
-Smart Water Crisis Response and Resource Allocation System. Vue 3 + TypeScript + Vite + Pinia + Vue Router + Tailwind CSS + Lucide + Leaflet/OpenStreetMap + Chart.js + PWA.
+AGOS coordinates safe water for **drinking and food preparation** across Calapan City’s 62 barangays. Bathing, laundry, irrigation and general household water use are outside the allocation plan.
 
-## Run locally
+The application uses Vue 3, TypeScript, Vite, Pinia, Leaflet/OpenStreetMap, Chart.js and a Supabase Postgres database. Operations are saved to the shared database, not browser storage. Browser storage holds only the selected workspace role, barangay and delivery team.
 
-Requires Node.js 22.12+ and npm.
+## Run
 
-```sh
-npm install
+Requires Node.js 22.12 or newer.
+
+~~~sh
+npm ci
 npm run dev
-```
-
-Open http://localhost:5173/. The server prints another port if 5173 is occupied.
-
-```sh
 npm test
 npm run build
-npm run preview
-```
+~~~
 
-Production preview normally runs at http://localhost:4173/. PWA caching is enabled in the production build, not development. Load production once online before trying offline. OpenStreetMap tiles require connectivity; community details and coordinates remain available without tiles.
+The development server prints its local address. Production output is in `dist/`. The PWA stores the application and reference map data for reading offline; recording an operation requires a database connection. OpenStreetMap street tiles require connectivity.
 
-## Competition walkthrough
+The public AGOS project URL and browser-safe publishable key are configured in `src/config/supabase.ts`. Optional overrides are documented in `.env.example`. Never place a database password, secret key or service-role key in frontend code or VITE environment variables.
 
-1. Click Reset demo. In the top-right Demo Mode switcher choose Barangay Representative. Choose Bucayao. Open Shortage reports, click New report, enter the simulated situation, and submit.
-2. Switch to LGU Coordinator. Open Shortage reports, filter Pending, and Review the new report. Read the location, population, local supply and urgency. Click Verify report.
-3. Open Crisis map. The new verified report is included. Click a marker for shortage details; the list below also gives coordinates and delivery status.
-4. Open Allocation engine. Explain the one-day planning assumption (15 L/person/day). Change the dispatch budget and observe proportional shares. The budget cannot create supply beyond uncommitted inventory. To change actual available supply, update physical stock in Water resources. Baseline changes require Apply baseline.
-5. Approve & reserve water. Manual quantity changes require a recorded reason. Water resources now shows the reservation. Allocation records create pending delivery tasks.
-6. Open Delivery operations. Open the new community task, choose Demo delivery team, set vehicle/schedule, and Assign delivery.
-7. Switch to Delivery Personnel. Open the assigned task, Start trip, reopen it and confirm actual liters. Completed requires the full assigned quantity. For fewer liters choose Partially Delivered and explain why; Failed requires zero liters and a note.
-8. Switch to LGU Coordinator. Overview, Water resources, and Reports & analytics reflect actual delivery, remaining reservations and unmet needs. Export CSV and inspect the decision audit trail.
-9. Refresh to demonstrate persistence. Reset demo to repeat.
+## Database setup
 
-## Business rules
+The AGOS project is separate from School Attendance and Mathverse:
 
-Unmet need = max(0, population × baseline − local daily water − confirmed assistance). All reports and assistance belong to one simulated planning day. Repeated new reports are independent scenarios; do not submit duplicate reports for the same incident. This prototype does not model multi-day replenishment.
+- Project: `fdwyjxgsvyfxqhwuaeuw`
+- Organization: AGOS Philippines
+- Region: Singapore
 
-Only verified reports enter recommendations. Active commitments are subtracted before further allocation. Budget is an explicit dispatch-capacity constraint; vehicle routing and automatic tanker capacity scheduling are future work. Urgency is entered and verified, visibly explained, and available for a human override; it does not silently weight population shares.
+Apply `supabase/schema.sql`, then `supabase/reference-data.sql` using a project administrator. The reference import checks all 62 unique PSGC records and official population/household totals. It creates no shortage reports, resources, teams, reservations or deliveries.
 
-Scarce supply is distributed proportionally. Whole-liter floors are followed by largest fractional remainders, with report ID as deterministic tie-breaker. Recommendations never exceed need or available supply. Approval checks current inventory and commitments again. Delivery confirmation consumes actual stock and releases unused reservations. Finalized trips cannot be confirmed twice. Important operations work on a cloned state and commit only after validation.
+The schema exposes `agos_snapshot()` for the current workspace and `agos_mutate()` for bounded, validated operations. Anonymous clients cannot directly insert, update or delete tables. All tables have row-level security. A locked singleton settings row serializes mutations; expected revisions reject stale actions before stock changes are made. The application refreshes after an operation and periodically while visible.
 
-Physical inventory includes reserved stock. Uncommitted = physical stock − active reservations. The seeded completed trip's 3,000 L has already been deducted before the opening stock figures. Confirmation subtracts actual delivered liters once. Partial/failed balances return to the dispatch pool.
+## Workspace roles
 
-## Architecture
+Open the avatar in the upper-right corner to choose:
 
-- `src/types`: operational models
-- `src/data`: independent seed factory
-- `src/services/operations.ts`: pure allocation, reservation and reconciliation functions
-- `src/services/repository.ts`: storage adapter contract and local implementation
-- `src/stores`: Pinia state, validated transactions, role and audit management
-- `src/components`: reactive Chart.js charts and Leaflet map
-- `src/views`: connected operational screens
+- **LGU Coordinator:** citywide requests, reviews, resources, teams, allocation, dispatch, receipts and analytics.
+- **Barangay Representative:** choose a barangay in the profile; submit and correct its requests, view incoming assistance, and confirm quantities received.
+- **Delivery Personnel:** choose an operating team in the profile; start assigned trips and record full, partial or failed outcomes.
 
-The repository interface can be replaced by a Firestore-backed implementation. A production implementation must move authorization and inventory transactions to a trusted backend; changing the client adapter alone is not sufficient.
+There is **no sign-in**, as requested. Role selection is declared workflow context, not a security boundary or verified identity. Anyone who can reach this public shared workspace can select its roles and record the permitted operations. Store aggregate operational information only; do not enter residents’ names, contact details, private addresses or other personal records. The operation history records the selected context, not a verified individual identity.
 
-## Verification and limitations
+## Operating flow
 
-Ten automated tests cover demand, negative inputs, zero supply, scarcity, deterministic rounding, inventory bounds, verification, duplicate commitment, completed/partial/failed reconciliation, reset, and an end-to-end business sequence. Production build includes TypeScript checking.
+1. A barangay representative reports actual affected people and households, available potable water, the assistance start date, requested planning days, observed shortage duration and situation.
+2. An LGU coordinator reviews the request and records a verification, correction request or rejection with an explanation.
+3. The coordinator records actual potable stock and operating teams with vehicle capacities.
+4. The allocation engine proposes proportional whole-liter shares of verified unmet need, subject to stock and a dispatch budget. Modifying a recommended share requires an explanation.
+5. Approval creates reservations and pending trips in the same database transaction. Large allocations can be split into vehicle-sized pending trips while preserving the total reservation.
+6. The coordinator assigns a team, vehicle and schedule. The selected delivery team starts the trip and records its actual outcome.
+7. Completion consumes only the recorded actual liters, once. Partial/failed outcomes release unused reservations; cancellations release reservations without consuming stock.
+8. The barangay records the actual quantity received independently. A difference from the team’s delivery record is retained for coordinator follow-up; it does not silently rewrite stock.
+9. Review scoped requests, deliveries, CSV exports and the operation history. Resolve a request once active commitments have been finalized or cancelled.
 
-Browser automation was unavailable in the execution environment; a manual visual and click-through review is still needed. This is a local competition demo, not production authentication. The demo role switcher is intentionally not security. There is no Firebase configuration, external messaging, actual emergency alert, or paid service.
+## Planning basis
 
-All operational data is fictional. Barangay names give geographic context; seeded coordinates are illustrative points near Calapan and are not surveyed barangay boundaries. No actual citizen information is needed. The supplied attachment contained only the project brief; the original AGOS logo and PowerPoint were unavailable. The current water-drop mark is a temporary brand asset. There is no production login; Demo Mode provides direct access.
+The initial editable allowances are:
+
+- Drinking: **3 L/person/day**
+- Food preparation: **3 L/person/day**
+- Total: **6 L/person/day**
+
+This is an **AGOS planning assumption**, not a universal WHO requirement or a medical prescription. WHO Technical Note 9 distinguishes survival intake (drinking plus water in food), 2.5–3 L/day, from water used for basic cooking, 3–6 L/day. The selected components must be adapted to actual conditions. Food moisture is not an additional component. Bathing and other non-food household uses are excluded.
+
+For each reported assistance period:
+
+~~~text
+net requested liters =
+  max(0, affected people × (drinking + food preparation) × planning days
+         − available local potable liters/day × planning days)
+
+unmet need = max(0, net requested liters − actual assistance delivered)
+
+eligible allocation need = max(0, unmet need − active commitments)
+~~~
+
+Only reported affected people enter demand calculations. Census population is not automatically treated as affected. Overlapping active planning periods for the same barangay are rejected to avoid duplicate requests. Scarce water is shared proportionally, with deterministic largest-remainder whole-liter rounding. Elevated urgency is visible for human review and does not secretly change the formula.
+
+## Real reference data
+
+All 62 barangays have official PSGC identifiers and 2024 census counts, with a reference date of **July 1, 2024**:
+
+- Total population: **148,558**
+- Household population: **148,031**
+- Households: **37,833**
+
+Sources, dates, licenses, boundary provenance and calculation limits are documented in [REFERENCE_DATA.md](docs/REFERENCE_DATA.md). Machine-readable reference data and source metadata are under `public/data/`. Boundary centroids are indicative barangay label points, not surveyed delivery locations or household addresses.
+
+Public sources did not establish current shortages, emergency water stock or live delivery assignments. Those operational records begin empty and must be entered from actual observations.
+
+## Verification
+
+`npm test` covers business rules and allocation/reconciliation invariants. `npm run build` includes strict TypeScript checks. Supabase integration tests run in a transaction that is rolled back, leaving no synthetic operational records in the live database.
+
+A role dropdown cannot provide access control. Before use that requires restricted staff operations or personal information, the access model must be changed. This version deliberately implements the requested open shared workflow.

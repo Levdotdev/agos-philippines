@@ -1,0 +1,18 @@
+{
+  "all62OfficialCodesUnique": true,
+  "all62GeometryCodesMatched": true,
+  "allCoordinatesInsideTheirSourceGeometry": true,
+  "censusTotalsMatchOfficialPublishedTotals": true,
+  "count": 62,
+  "totals": {
+    "population": 148558,
+    "householdPopulation": 148031,
+    "households": 37833
+  },
+  "sourceGeometrySha256": "523b61febfbd2d7847d0e270414c254dd7a6ed448b408eb0f1658e87abafdf0d",
+  "censusCsvSha256": "ac8ad271c6bcd0c6334a6e5110451b037b07ecce8a92a482de850f9866d9b059",
+  "coordinateMethods": {
+    "area-weighted boundary centroid": 62
+  },
+  "operationalDataFabricated": false
+}
